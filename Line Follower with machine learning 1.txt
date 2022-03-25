@@ -1,0 +1,305 @@
+#define rightmotor1 6
+#define rightmotor2 5
+#define rightmotorPWM 10
+#define leftmotor1 4
+#define leftmotor2 3
+#define leftmotorPWM 11
+
+const int ls = A4;
+const int cs = A2;
+const int rs = A0;
+int episodes = 100 ;
+int left_sensor;
+int center_sensor;
+int right_sensor;
+float ALPHA = 0.1;
+float GAMMA = 0.5;
+float Q_new,Q_old,Q_Max;
+
+
+float Q[8][4]={{0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0},
+               {0,0,0,0}};
+
+
+ int Rewards[8][4]={{0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0},
+                    {0,0,0,0}};
+
+
+
+/*===============================Robot's functions=======================================*/
+/*Function to adjust the robot's motion direction to move it Forward by controlling the DC motors*/
+void MoveForward()
+{
+   digitalWrite(rightmotor1,1);
+  digitalWrite(rightmotor2,0);
+  digitalWrite(leftmotor1,0);
+  digitalWrite(leftmotor2,1);
+  analogWrite(rightmotorPWM, 255);
+   analogWrite(leftmotorPWM, 255);
+}
+/*Function to adjust the robot's motion direction to make it Turn Right by controlling the DC motors*/
+void TurnLeft()
+{
+  digitalWrite(rightmotor1,1);
+  digitalWrite(rightmotor2,0);
+  digitalWrite(leftmotor1,1);
+  digitalWrite(leftmotor2,0);
+   analogWrite(rightmotorPWM,255);
+   analogWrite(leftmotorPWM, 255);
+}
+/*Function to adjust the robot's motion direction to make it Turn Right by controlling the DC motors*/
+void TurnRight()
+{
+  digitalWrite(rightmotor1,0);
+  digitalWrite(rightmotor2,1);
+  digitalWrite(leftmotor1,0);
+  digitalWrite(leftmotor2,1);
+  analogWrite(rightmotorPWM, 255);
+   analogWrite(leftmotorPWM, 255);
+}
+/*Function to adjust the robot's motion direction to make it Stop by controlling the DC motors*/
+void Stop()
+{
+  digitalWrite(rightmotor1,1);
+  digitalWrite(rightmotor2,0);
+  digitalWrite(leftmotor1,1);
+  digitalWrite(leftmotor2,0);
+  analogWrite(rightmotorPWM, 0);
+   analogWrite(leftmotorPWM, 0);
+   delay(300);
+}
+int Get_stateNumber(){
+  int stateNumber;
+  left_sensor=digitalRead(ls);
+  center_sensor=digitalRead(cs);
+  right_sensor=digitalRead(rs);
+  if ( (left_sensor==0) && (center_sensor==0) && (right_sensor==0) )
+  {
+    stateNumber=0;
+  }
+  else if ( (left_sensor==0) && (center_sensor==0) && (right_sensor==1) )
+  {
+    stateNumber=1;
+  }
+  else if ( (left_sensor==0) && (center_sensor==1) && (right_sensor==0) )
+  {
+    stateNumber=2;
+  }
+  else if ( (left_sensor==0) && (center_sensor==1) && (right_sensor==1) )
+  {
+    stateNumber=3;
+  }
+  else if ( (left_sensor==1) && (center_sensor==0) && (right_sensor==0) )
+  {
+    stateNumber=4;
+  }
+  else if ( (left_sensor==1) && (center_sensor==0) && (right_sensor==1) )
+  {
+    state_number=5;
+  }
+  else if ( (left_sensor==1) && (center_sensor==1) && (right_sensor==0) )
+  {
+    state_number=6;
+  }
+  else if ( (left_sensor==0) && (center_sensor==1) && (right_sensor==1) )
+  {
+    state_number=7;
+  }
+  return stateNumber;
+}
+
+/* training */
+void takeAction(int action)
+{
+  if(action==0)
+    { 
+       MoveForward();
+        Delay(500);
+         Stop();
+    }
+  Else If (action==1)
+  { 
+    TurnRight();
+    Delay(500);
+    Stop();
+ }
+ Else If (action==2)
+ { 
+    TurnLeft()();
+     Delay(500);
+     Stop();
+ }
+ Else If (action==3)
+ { 
+ 
+    Stop();
+ }
+
+}
+
+Void looping()
+{ 
+  for(int e=0 ; e<episodes ; e++ )
+  { while (true)
+     {
+         int c_state = Get_stateNumber();
+         int n_state ;
+         Action = random(0,4);
+
+        If (c_state ==0)
+         { takeAction (Action);
+            If (centralSensor==1)
+            { Rewards[c_state][Action] =10;}
+           Else { Rewards[c_state][Action] =-10;}
+         }
+        
+         If ( c_state ==1 ||c_state ==3)
+         { takeAction (Action);
+            If (centralSensor==1)
+            { Rewards[c_state][Action] =10;}
+           Else { Rewards[c_state][Action] =-10;}
+         }
+
+         If (c_state ==2)
+         { takeAction (Action);
+            If (centralSensor==1)
+            { Rewards[c_state][Action] =10;}
+           Else { Rewards[c_state][Action] =-10;}
+         }
+
+         If ( c_state ==4|| c_state ==6 )
+         { takeAction (Action);
+            If (centralSensor==1)
+            { Rewards[c_state][Action] =10;}
+           Else { Rewards[c_state][Action] =-10;}
+         }
+
+         If (c_state ==5)
+         { takeAction (Action);
+            If (centralSensor==1)
+            { Rewards[c_state][Action] =10;}
+           Else { Rewards[c_state][Action] =-10;}
+         }
+
+         If (c_state ==7)
+         { takeAction (3);
+           
+         }
+
+         n_state = Get_stateNumber();
+         Update_Q(Q,c_state ,n_state,Action,Rewards[c_state][Action] ,ALPHA,GAMMA)
+          If (c_state ==7)
+          { break; }
+
+  
+
+
+
+
+void Testing()
+{   int c_state = Get_stateNumber();
+         int n_state ;
+          action = GetMaxIndex(float Q_table[][],int nextState ) 
+
+        If (c_state ==0)
+         { takeAction (Action);}
+
+        
+         If ( c_state ==1 ||c_state ==3)
+         { takeAction (Action);
+            
+         }
+
+         If (c_state ==2)
+         { takeAction (Action);
+           
+         }
+
+         If ( c_state ==4|| c_state ==6 )
+         { takeAction (Action);
+           
+         }
+
+         If (c_state ==5)
+         { takeAction (Action);
+           
+         }
+
+         If (c_state ==7)
+         { takeAction (3);
+           
+         }
+
+}        
+
+
+
+
+
+float GetMax (float Q_table[][],int nextState ) 
+{
+    float maximum =  Q_table[nextState][0];
+    for(int i =1 ; i<4 ; i++)
+    {
+        if(Q_table[nextState][i]> maximum)
+        { maximum = Q_table[nextState][i] ; }
+
+    }
+   return maximum ;
+}
+
+float  GetMaxIndex(float Q_table[][],int nextState ) 
+{
+    float maximum =  Q_table[nextState][0];
+    for(int i =1 ; i<4 ; i++)
+    {
+        if(Q_table[nextState][i]> maximum)
+        { maximum = i ; }
+
+    }
+   return maximum ;
+}
+
+void Update_Q(float Qtable[][] , char currentState, char nextState, char Action,  int Reward, float LEARNING_RATE, float DISCOUNT_FACTOR)
+{
+  Q_old = Qtable[current_state][Action];
+  Q_Max = GetMax(Qtable[][], nextState);
+  Q_new = ( ( 1-LEARNING_RATE ) * Q_old ) + ( LEARNING_RATE * ( Reward + ( DISCOUNT_FACTOR * Q_Max ) ) );
+  
+  Q[currentState][Action] = Q_new;
+
+}
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+ pinMode(rightmotor1, OUTPUT);
+  pinMode(rightmotor2, OUTPUT);
+  pinMode(rightmotorPWM, OUTPUT);
+  pinMode(leftmotor1, OUTPUT);
+  pinMode(leftmotor2, OUTPUT);
+  pinMode(leftmotorPWM, OUTPUT);
+  pinMode(ls, INPUT);
+  pinMode(cs,INPUT);
+  pinMode(rs, INPUT);
+ 
+}
+void loop() 
+{
+  // put your main code here, to run repeatedly:
+    looping();
+    Testing();
+}
